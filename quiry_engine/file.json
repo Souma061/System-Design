@@ -1,0 +1,64 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Souma",
+      "city": "Howrah"
+    },
+    {
+      "id": 2,
+      "name": "Ritam",
+      "city": "Mumbai"
+    },
+    {
+      "id": 3,
+      "name": "user3",
+      "city": "Kolkata"
+    },
+    {
+      "id": 4,
+      "name": "user4",
+      "city": "Delhi"
+    },
+    {
+      "id": 5,
+      "name": "newuser",
+      "city": "Pune"
+    },
+    {
+      "id": 6,
+      "name": "Parna'",
+      "city": "Howrah'"
+    },
+    {
+      "id": 6,
+      "name": "Honu'",
+      "city": "Sonagachi"
+    },
+    {
+      "id": 7,
+      "name": "man",
+      "city": "hoogly"
+    },
+    {
+      "id": 8,
+      "name": "Sex",
+      "city": "sexy"
+    },
+    {
+      "id": 9,
+      "name": "Loru",
+      "city": "Golden tree"
+    },
+    {
+      "id": 10,
+      "name": "Bokachoda",
+      "city": "Chatnatola"
+    },
+    {
+      "id": 10,
+      "name": "Bokachoda",
+      "city": "Chatnatola"
+    }
+  ]
+}
