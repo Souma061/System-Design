@@ -70,8 +70,35 @@ def save_table(tables):
         json.dump(tables, f, indent=2)
 
 
+def build_index():
+    for table_name, rows in tables.items():
+        indexes[table_name] = {}
+        for i, row in enumerate(rows):
+            for col, val in row.items():
+                if col not in indexes[table_name]:
+                    indexes[table_name][col] = {}
+                val_key = str(val)
+                if val_key not in indexes[table_name][col]:
+                    indexes[table_name][col][val_key] = []
+                indexes[table_name][col][val_key].append(i)
+
+
+def update_index(table_name, row_idx, row):
+    if table_name not in indexes:
+        indexes[table_name] = {}
+    for col,val in row.items():
+        if col not in indexes[table_name]:
+            indexes[table_name][col] = {}
+        val_key = str(val)
+        if val_key not in indexes[table_name][col]:
+            indexes[table_name][col][val_key] = []
+        indexes[table_name][col][val_key].append(row_idx)
+
 tables = load_table()
-replay_wal()  # replay WAL on startup to recover any uncommitted changes
+indexes = {}
+build_index()  # build indexes on startup to speed up queries
+replay_wal()
+
 
 
 def execute(query):
@@ -94,7 +121,7 @@ def execute(query):
 
     if table_name not in tables:
         raise Exception(f"Table '{table_name}' does not exist.")
-    data = tables.get(table_name, [])
+    # data = tables.get(table_name, [])
 
     # find where clause
     where_col = None
@@ -104,12 +131,26 @@ def execute(query):
         where_col = token[where_idx + 1]
         where_val = token[where_idx + 3].strip("'")  # 'Kolkata'
 
+
+    if where_col:
+        if (table_name in indexes and
+            where_col in indexes[table_name] and
+            where_val in indexes[table_name][where_col]):
+            row_indices = indexes[table_name][where_col][str(where_val)]
+            data = [tables[table_name][i] for i in row_indices]
+        else:
+            data = tables[table_name]  # fallback to full table scan if index not found
+    else:
+        data = tables[table_name]  # no where clause, use full table
+
+
+
     # execute query
     results = []
     for row in data:
-        if where_col:
-            if str(row.get(where_col)) != where_val:
-                continue
+        # if where_col:
+        #     if str(row.get(where_col)) != where_val:
+        #         continue
 
         if columns == ["*"]:
             results.append(row)
@@ -161,6 +202,8 @@ def insert(query):
     if table_name not in tables:
         tables[table_name] = []
     tables[table_name].append(row)
+    row_idx = len(tables[table_name]) - 1
+    update_index(table_name, row_idx, row) # update the index for the new row
     save_table(tables)
 
     # import time
@@ -195,3 +238,14 @@ if __name__ == "__main__":
                 print("Only SELECT and INSERT queries are supported.")
         except Exception as e:
             print(f"Error: {e}")
+
+
+# #indexes = {
+#     "users": {
+#         "city": {
+#             "Kolkata": [0, 2],  # row positions in tables["users"]
+#             "Mumbai":  [1],
+#             "Delhi":   [3]
+#         }
+#     }
+# }
